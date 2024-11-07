@@ -3,6 +3,8 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/next_auth/auth";
 
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: { locale: string } }) {
   const { locale } = await params;
@@ -10,13 +12,16 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!routing.locales.includes(locale as any)) {
     notFound();
   }
+  const session = await auth();
 
   const messages = await getMessages();
 
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <SessionProvider session={session}>
+          <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        </SessionProvider>
       </body>
     </html>
   );
